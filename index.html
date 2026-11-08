@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>Training Plan</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #181b22;
+    --card2: #20242d;
+    --text: #e8eaf0;
+    --muted: #8b92a3;
+    --lower: #4ade80;
+    --upper: #60a5fa;
+    --push: #f472b6;
+    --climb: #fbbf24;
+    --rest: #6b7280;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 24px);
+    max-width: 640px;
+    margin-inline: auto;
+  }
+  h1 { font-size: 1.5rem; margin: 20px 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 16px; font-size: .9rem; }
+  .week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    padding: 10px 0;
+    z-index: 2;
+  }
+  .day {
+    border: 0;
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+    padding: 8px 0 6px;
+    font: inherit;
+    font-size: .8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    border-bottom: 3px solid var(--c);
+  }
+  .day b { font-size: .85rem; }
+  .day span { font-size: .65rem; color: var(--muted); }
+  .day.active { background: var(--card2); outline: 2px solid var(--c); }
+  .day.today b::after { content: " •"; color: var(--c); }
+  .session {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 8px;
+    border-left: 4px solid var(--c);
+  }
+  .session h2 { margin: 0; font-size: 1.25rem; }
+
+  .ex {
+    background: var(--card2);
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    align-items: center;
+  }
+  .ex.done { opacity: .45; }
+  .ex .name { font-weight: 600; }
+  .ex .sets { font-variant-numeric: tabular-nums; color: var(--c); font-weight: 700; white-space: nowrap; }
+  .ex .note { color: var(--muted); font-size: .8rem; grid-column: 1 / -1; }
+  .ex .row { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .ex input[type=text] {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg);
+    border: 1px solid #2c313c;
+    border-radius: 8px;
+    color: var(--text);
+    padding: 8px 10px;
+    font: inherit;
+    font-size: .9rem;
+  }
+  .ex input[type=checkbox] { width: 26px; height: 26px; accent-color: var(--c); }
+  .big { text-align: center; padding: 28px 12px; color: var(--muted); }
+  .big .emoji { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+  .reset {
+    margin-top: 12px;
+    background: transparent;
+    border: 1px solid #2c313c;
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font: inherit;
+    font-size: .85rem;
+  }
+  details {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-top: 12px;
+  }
+  summary { font-weight: 700; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: .9rem; }
+  td, th { text-align: left; padding: 8px 6px; border-top: 1px solid #262a33; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .8rem; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+</style>
+</head>
+<body>
+  <h1>Training Plan</h1>
+  <p class="sub">Upper / Lower + 2× climbing + 2× abs</p>
+
+  <nav class="week" id="week"></nav>
+  <main id="session"></main>
+
+  <details>
+    <summary>Rules</summary>
+    <table>
+      <tr><td>Effort</td><td>Stop with 1–2 reps left (Thu: 2–3)</td></tr>
+      <tr><td>Progression</td><td>Hit the top of the rep range on all sets → add weight → back to the bottom</td></tr>
+      <tr><td>Rest</td><td>Compound lifts 2–3 min, isolation 1–1.5 min</td></tr>
+      <tr><td>Deload</td><td>Every 6–8 weeks: one week at half the sets</td></tr>
+      <tr><td>Missed climb</td><td>Rest. Don't add volume</td></tr>
+      <tr><td>Too tired</td><td>Drop Thu, move Bulgarian split squat to Mon</td></tr>
+      <tr><td>Protein</td><td>1.6–2.2 g per kg body weight per day</td></tr>
+      <tr><td>Calories</td><td>Small surplus, +200–300 kcal</td></tr>
+      <tr><td>Sleep</td><td>7–9 h</td></tr>
+      <tr><td>Abs</td><td>Progress with slower reps, pauses and harder variations. Visible abs also need low body fat</td></tr>
+    </table>
+  </details>
+
+  <details>
+    <summary>Weekly sets per muscle</summary>
+    <table>
+      <tr><th>Muscle</th><th>Sets</th><th>Days</th></tr>
+      <tr><td>Chest</td><td>12</td><td>Tue, Sat</td></tr>
+      <tr><td>Shoulders</td><td>9 + face pull</td><td>Tue, Sat</td></tr>
+      <tr><td>Quads</td><td>9</td><td>Mon, Thu</td></tr>
+      <tr><td>Hams / glutes</td><td>12</td><td>Mon, Thu</td></tr>
+      <tr><td>Back</td><td>6 + 2 climbs</td><td>Tue, Fri, Sun</td></tr>
+      <tr><td>Arms</td><td>8 + dips</td><td>Tue, Sat</td></tr>
+      <tr><td>Abs / core</td><td>25</td><td>Wed, Sun</td></tr>
+    </table>
+  </details>
+
+<script>
+const C = { lower: "var(--lower)", upper: "var(--upper)", push: "var(--push)", climb: "var(--climb)", rest: "var(--rest)" };
+
+const days = [
+  { key: "mon", d: "Mon", short: "Lower A", title: "Lower A", color: C.lower, ex: [
+    ["Back squat", "4 × 5–8"],
+    ["Romanian deadlift", "3 × 8–10"],
+    ["Nordic hamstring curl", "3 × 4–8"],
+    ["Calf raise", "3 × 10–15"],
+  ]},
+  { key: "tue", d: "Tue", short: "Upper A", title: "Upper A", color: C.upper, ex: [
+    ["Bench press", "4 × 6–10"],
+    ["Chest-supported DB row", "3 × 8–12"],
+    ["DB overhead press", "3 × 8–12"],
+    ["Lat pulldown / 1-arm cable row", "3 × 10–12"],
+    ["Cable lateral raise", "3 × 12–20"],
+    ["DB curl", "2 × 10–12"],
+    ["Cable triceps pushdown", "2 × 10–15"],
+  ]},
+  { key: "wed", d: "Wed", short: "Abs", title: "Abs A", color: C.rest, ex: [
+    ["Hanging leg raise", "3 × 8–15"],
+    ["V-up", "3 × 8–15"],
+    ["Dead bug", "3 × 8–10 / side"],
+    ["Side plank", "2 × 30–45 s / side"],
+  ]},
+  { key: "thu", d: "Thu", short: "Lower B", title: "Lower B", color: C.lower, ex: [
+    ["Bulgarian split squat", "3 × 8–12 / leg"],
+    ["Barbell hip thrust", "3 × 8–12"],
+    ["Lying DB leg curl", "3 × 10–15"],
+    ["Goblet squat", "2 × 12–15"],
+    ["Calf raise", "3 × 12–20"],
+  ]},
+  { key: "fri", d: "Fri", short: "Climb", title: "Climb", color: C.climb, rest: "▲" },
+  { key: "sat", d: "Sat", short: "Upper B", title: "Upper B", color: C.push, ex: [
+    ["Incline DB press", "3 × 8–12"],
+    ["Dips", "3 × 6–12"],
+    ["Cable fly", "2 × 12–15"],
+    ["Cable lateral raise", "3 × 12–20"],
+    ["Cable face pull", "3 × 15–20"],
+    ["Overhead cable triceps ext.", "2 × 12–15"],
+    ["Reverse wrist curl", "2 × 15–20"],
+  ]},
+  { key: "sun", d: "Sun", short: "Climb+Abs", title: "Climb + Abs B", color: C.climb, ex: [
+    ["Lying windshield wiper", "3 × 8–12 / side"],
+    ["Plank shoulder tap", "3 × 10–15 / side"],
+    ["Side plank hip dip", "3 × 10–15 / side"],
+    ["Reverse crunch", "3 × 10–15"],
+    ["Hollow body hold", "2 × 20–40 s"],
+  ]},
+];
+
+const todayIdx = (new Date().getDay() + 6) % 7;
+let current = todayIdx;
+const store = {
+  get: k => localStorage.getItem("tp:" + k) || "",
+  set: (k, v) => localStorage.setItem("tp:" + k, v),
+  del: k => localStorage.removeItem("tp:" + k),
+};
+
+function renderWeek() {
+  const nav = document.getElementById("week");
+  nav.innerHTML = "";
+  days.forEach((day, i) => {
+    const b = document.createElement("button");
+    b.className = "day" + (i === current ? " active" : "") + (i === todayIdx ? " today" : "");
+    b.style.setProperty("--c", day.color);
+    b.innerHTML = `<b>${day.d}</b><span>${day.short}</span>`;
+    b.onclick = () => { current = i; render(); };
+    nav.appendChild(b);
+  });
+}
+
+function renderSession() {
+  const day = days[current];
+  const el = document.getElementById("session");
+  el.innerHTML = "";
+  const s = document.createElement("section");
+  s.className = "session";
+  s.style.setProperty("--c", day.color);
+  s.innerHTML = `<h2>${day.d} · ${day.title}</h2>`;
+
+  if (day.rest) {
+    s.insertAdjacentHTML("beforeend", `<div class="big"><span class="emoji">${day.rest}</span></div>`);
+  }
+  if (day.ex) {
+    day.ex.forEach(([name, sets, note], j) => {
+      const id = `${day.key}:${j}`;
+      const ex = document.createElement("div");
+      ex.className = "ex" + (store.get(id + ":done") ? " done" : "");
+      ex.innerHTML = `
+        <div class="name">${name}</div>
+        <div class="sets">${sets}</div>
+        ${note ? `<div class="note">${note}</div>` : ""}
+        <div class="row">
+          <input type="text" inputmode="decimal" placeholder="Weight / reps (e.g. 60kg 8,8,7)">
+          <input type="checkbox" aria-label="Done">
+        </div>`;
+      const txt = ex.querySelector("input[type=text]");
+      const chk = ex.querySelector("input[type=checkbox]");
+      txt.value = store.get(id + ":w");
+      chk.checked = !!store.get(id + ":done");
+      txt.oninput = () => store.set(id + ":w", txt.value);
+      chk.onchange = () => {
+        chk.checked ? store.set(id + ":done", "1") : store.del(id + ":done");
+        ex.classList.toggle("done", chk.checked);
+      };
+      s.appendChild(ex);
+    });
+    const r = document.createElement("button");
+    r.className = "reset";
+    r.textContent = "Uncheck all (keep weights)";
+    r.onclick = () => { day.ex.forEach((_, j) => store.del(`${day.key}:${j}:done`)); render(); };
+    s.appendChild(r);
+  }
+  el.appendChild(s);
+}
+
+function render() { renderWeek(); renderSession(); }
+render();
+</script>
+</body>
+</html>
